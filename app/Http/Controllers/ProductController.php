@@ -5,47 +5,59 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Tambahkan ini agar authorize() jalan
 
 class ProductController extends Controller
 {
+    use AuthorizesRequests; // Tambahkan ini juga di dalam class
+
     public function index()
-{
-    // Mengambil data dengan pembagian 10 data per halaman
-    $products = Product::paginate(10); 
-    return view('product.index', compact('products'));
-}
+    {
+        // Mengambil data dengan pembagian 10 data per halaman
+        $products = Product::with('user')->paginate(10); 
+        return view('product.index', compact('products'));
+    }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required',
-        'quantity' => 'required|numeric',
-        'price' => 'required|numeric',
-        'user_id' => 'required|exists:users,id',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required',
+            'quantity' => 'required|numeric',
+            'price' => 'required|numeric',
+            'user_id' => 'required|exists:users,id',
+        ]);
 
-    \App\Models\Product::create($request->all());
+        Product::create($request->all());
 
-    return redirect()->route('product.index')->with('success', 'Product created successfully!');
-}
+        return redirect()->route('product.index')->with('success', 'Product created successfully!');
+    }
 
     public function create()
     {
         $users = User::orderBy('name')->get();
-
         return view('product.create', compact('users'));
     }
 
     public function show($id)
     {
         $product = Product::findOrFail($id);
-
         return view('product.view', compact('product'));
     }
 
+    // --- BAGIAN EDIT DENGAN POLICY ---
+    public function edit(Product $product)
+    {
+        $this->authorize('update', $product); // Cek apakah boleh edit
+        
+        $users = User::orderBy('name')->get();
+        return view('product.edit', compact('product', 'users'));
+    }
+
+    // --- BAGIAN UPDATE DENGAN POLICY ---
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+        $this->authorize('update', $product); // Cek apakah boleh update
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -59,19 +71,22 @@ class ProductController extends Controller
         return redirect()->route('product.index')->with('success', 'Product updated successfully.');
     }
 
-    public function edit(Product $product)
-    {
-        $users = User::orderBy('name')->get();
-
-        return view('product.edit', compact('product', 'users'));
-    }
-
+    // --- BAGIAN DELETE DENGAN POLICY ---
     public function delete($id)
     {
         $product = Product::findOrFail($id);
+        $this->authorize('delete', $product); // Cek apakah boleh hapus
 
         $product->delete();
 
         return redirect()->route('product.index')->with('success', 'Product berhasil dihapus');
+    }
+
+    // Fungsi tambahan untuk export (Tugas Kelas B)
+    public function export()
+    {
+        $this->authorize('export-product'); // Cek Gate export
+        // Logika export kamu di sini (misal download excel)
+        return response()->json(['message' => 'Fungsi export berhasil dipanggil!']);
     }
 }
