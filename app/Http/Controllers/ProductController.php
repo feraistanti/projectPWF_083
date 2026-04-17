@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Tambahkan ini agar 
 
 class ProductController extends Controller
 {
-    use AuthorizesRequests; // Tambahkan ini juga di dalam class
+    use AuthorizesRequests; // Tambahkan ini juga di dalam class 
 
     public function index()
     {
