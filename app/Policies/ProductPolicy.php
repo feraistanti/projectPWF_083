@@ -8,59 +8,46 @@ use Illuminate\Auth\Access\Response;
 
 class ProductPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true; // biar semua user bisa lihat list product
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Product $product): bool
     {
-        return false;
+        return true; // semua bisa lihat detail
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return true; // semua user boleh tambah product
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Product $product): bool
     {
-        // Admin hanya bisa edit jika produk itu miliknya sendiri
-        return $user->role === 'admin' && $user->id === $product->user_id;
-    }
+        if ($user->role === 'admin') {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-   public function delete(User $user, Product $product): bool
+        return $user->id === $product->user_id;
+    }   
+
+    public function delete(User $user, Product $product): bool
     {
-        // Admin hanya bisa hapus jika produk itu miliknya sendiri
-        return $user->role === 'admin' && $user->id === $product->user_id;
+        // kalau admin → boleh hapus semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        // kalau user biasa → hanya miliknya
+        return $user->id === $product->user_id;
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
     public function restore(User $user, Product $product): bool
     {
         return false;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
     public function forceDelete(User $user, Product $product): bool
     {
         return false;

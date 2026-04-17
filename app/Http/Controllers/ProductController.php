@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Tambahkan ini agar authorize() jalan
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProductController extends Controller
 {
@@ -20,17 +24,63 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'quantity' => 'required|numeric',
-            'price' => 'required|numeric',
-            'user_id' => 'required|exists:users,id',
+        $isAdmin = auth()->user()->role === 'admin';
+
+        if ($isAdmin) {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'quantity' => 'required|integer',
+                'price' => 'required|numeric',
+                'user_id' => 'required|exists:users,id',
+                'category_id' => 'required|exists:categories,id',
+            ],[
+                'name.required' => 'Nama produk wajib diisi.',
+                'name.max' => 'Nama produk tidak boleh lebih dari 255 karakter.',
+                'quantity.required' => 'Jumlah (kuantitas) produk wajib diisi.',
+                'quantity.integer' => 'Jumlah produk harus berupa angka bulat (tidak boleh desimal).',
+                'price.required' => 'Harga produk wajib diisi.',
+                'price.numeric' => 'Harga produk harus berupa angka yang valid.',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'quantity' => 'required|integer',
+                'price' => 'required|numeric',
+            ], [
+                'name.required' => 'Nama produk wajib diisi.',
+            ]);
+            $validated['user_id'] = auth()->id();
+            $validated['category_id'] = Category::firstOrCreate(['name' => 'Uncategorized'])->id;
+        }
+
+        try {
+        Product::create($validated);
+
+        return redirect()
+            ->route('product.index')
+            ->with('success', 'Product created successfully.');
+            
+    } catch (QueryException $e) {
+        Log::error('Product store database error', [
+            'message' => $e->getMessage(),
         ]);
 
-        Product::create($request->all());
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Database error while creating product.');
+            
+    } catch (\Throwable $e) {
+        Log::error('Product store unexpected error', [
+            'message' => $e->getMessage(),
+        ]);
 
-        return redirect()->route('product.index')->with('success', 'Product created successfully!');
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Unexpected error occurred.');
     }
+}
 
     public function create()
     {
@@ -57,14 +107,37 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
-        $this->authorize('update', $product); // Cek apakah boleh update
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'quantity' => 'sometimes|integer',
-            'price' => 'sometimes|numeric',
-            'user_id' => 'sometimes|exists:users,id',
-        ]);
+        // Minta izin ke Policy
+        Gate::authorize('update', $product);
+
+        $isAdmin = auth()->user()->role === 'admin';
+
+        if ($isAdmin) {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'quantity' => 'required|integer',
+                'price' => 'required|numeric',
+                'user_id' => 'required|exists:users,id',
+                'category_id' => 'required|exists:categories,id',
+            ], [
+                'name.required' => 'Nama produk wajib diisi.',
+                'name.max' => 'Nama produk tidak boleh lebih dari 255 karakter.',
+                'quantity.required' => 'Jumlah (kuantitas) produk wajib diisi.',
+                'quantity.integer' => 'Jumlah produk harus berupa angka bulat (tidak boleh desimal).',
+                'price.required' => 'Harga produk wajib diisi.',
+                'price.numeric' => 'Harga produk harus berupa angka yang valid.',
+            ]);
+
+        } else {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'quantity' => 'required|integer',
+                'price' => 'required|numeric',
+            ]);
+            $validated['user_id'] = $product->user_id;
+            $validated['category_id'] = $product->category_id;
+        }
 
         $product->update($validated);
 
