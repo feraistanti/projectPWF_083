@@ -162,4 +162,4 @@ class ProductController extends Controller
         // Logika export kamu di sini (misal download excel)
         return response()->json(['message' => 'Fungsi export berhasil dipanggil!']);
     }
-}
+} //
