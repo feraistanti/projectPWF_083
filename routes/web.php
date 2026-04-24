@@ -30,6 +30,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
     Route::put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
     Route::get('/product/edit/{product}', [ProductController::class, 'edit'])->name('product.edit');
-    Route::delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
+   Route::delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.destroy');
 });
 require __DIR__.'/auth.php';
