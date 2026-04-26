@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory; // <-- Tambahkan ini
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Kategori extends Model
 {
-    use HasFactory; // <-- Tambahkan ini di dalam class
+    use HasFactory;
 
-    protected $fillable = ['product_id', 'name'];
+    protected $fillable = ['name'];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'kategori_id'); // 🔥 versi aman
+    }
 }

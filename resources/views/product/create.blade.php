@@ -26,9 +26,16 @@
                         {{-- Name --}}
                         <div>
                             <label for="name">
-                                <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name <span class="text-red-500">*</span></span>
+                                <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Product Name <span class="text-red-500">*</span>
+                                </span>
                             </label>
-                            <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="e.g. Wireless Headphones" class="w-full px-4 py-2.5 rounded-lg border text-sm {{ $errors->has('name') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                            <input type="text" id="name" name="name" value="{{ old('name') }}"
+                                placeholder="e.g. Wireless Headphones"
+                                class="w-full px-4 py-2.5 rounded-lg border text-sm 
+                                {{ $errors->has('name') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} 
+                                text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 
+                                focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
                             @error('name')
                                 <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                             @enderror
@@ -38,9 +45,15 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="quantity">
-                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity <span class="text-red-500">*</span></span>
+                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Quantity <span class="text-red-500">*</span>
+                                    </span>
                                 </label>
-                                <input type="number" id="quantity" name="quantity" value="{{ old('quantity') }}" placeholder="0" min="0" class="w-full px-4 py-2.5 rounded-lg border text-sm {{ $errors->has('quantity') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                                <input type="number" id="quantity" name="quantity" value="{{ old('quantity') }}"
+                                    placeholder="0" min="0"
+                                    class="w-full px-4 py-2.5 rounded-lg border text-sm 
+                                    {{ $errors->has('quantity') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} 
+                                    text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
                                 @error('quantity')
                                     <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                                 @enderror
@@ -48,26 +61,61 @@
 
                             <div>
                                 <label for="price">
-                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (Rp) <span class="text-red-500">*</span></span>
+                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Price (Rp) <span class="text-red-500">*</span>
+                                    </span>
                                 </label>
-                                <input type="number" id="price" name="price" value="{{ old('price') }}" placeholder="0" min="0" step="0.01" class="w-full px-4 py-2.5 rounded-lg border text-sm {{ $errors->has('price') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                                <input type="number" id="price" name="price" value="{{ old('price') }}"
+                                    placeholder="0" min="0" step="0.01"
+                                    class="w-full px-4 py-2.5 rounded-lg border text-sm 
+                                    {{ $errors->has('price') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} 
+                                    text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
                                 @error('price')
                                     <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
 
-                    
+                        {{-- Category --}}
+                        <div>
+                            <label for="kategori_id">
+                                <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Category <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+
+                            <select name="kategori_id" id="kategori_id"
+                                class="w-full px-4 py-2.5 rounded-lg border text-sm 
+                                {{ $errors->has('kategori_id') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} 
+                                text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+
+                                <option value="">-- Choose Category --</option>
+
+                                @foreach ($kategoris as $k)
+                                    <option value="{{ $k->id }}" {{ old('kategori_id') == $k->id ? 'selected' : '' }}>
+                                        {{ $k->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('kategori_id')
+                                <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         {{-- Actions --}}
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <a href="{{ route('product.index') }}" class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <a href="{{ route('product.index') }}"
+                                class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                                 Cancel
                             </a>
-                            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+
+                            <button type="submit"
+                                class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
                                 Save Product
                             </button>
                         </div>
+
                     </form>
 
                 </div>

@@ -9,17 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('name');
-            $table->integer('quantity');
-            $table->decimal('price', 12, 2);
-            $table->timestamps();
-        });
-    }
+public function up(): void
+{
+    Schema::create('products', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
+        // 🔥 WAJIB DITAMBAHKAN AGAR NYAMBUNG KE KATEGORI
+        // Pakai nullable() agar tidak error kalau ada produk tanpa kategori
+        $table->foreignId('kategori_id')->nullable()->constrained('categories')->onDelete('cascade'); 
+
+        $table->string('name');
+        $table->integer('quantity');
+        $table->decimal('price', 12, 2);
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.

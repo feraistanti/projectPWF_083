@@ -12,14 +12,9 @@
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            @can('export-product')
-                                <a href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition duration-150 shadow-sm">
-                                    Export Excel
-                                </a>
-                            @endcan
-
-                            {{-- ✅ COMPONENT ADD --}}
-                            <x-add-product :url="route('product.create')" :name="'Product'" />
+                            <a href="{{ route('product.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition duration-150 shadow-sm">
+                                + Add Product
+                            </a>
                         </div>
                     </div>
 
@@ -35,48 +30,49 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                             <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th class="px-6 py-3">#</th>
-                                    <th class="px-6 py-3">Name</th>
-                                    <th class="px-6 py-3">Quantity</th>
-                                    <th class="px-6 py-3">Price</th>
-                                    <th class="px-6 py-3">Owner</th>
-                                    <th class="px-6 py-3 text-right">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kategori</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-
-                            <tbody class="bg-white dark:bg-gray-800 divide-y">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($products as $product)
-                                    <tr>
-                                        <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                                        <td class="px-6 py-4">{{ $product->name }}</td>
-                                        <td class="px-6 py-4">{{ $product->quantity }}</td>
-                                        <td class="px-6 py-4">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
-                                        <td class="px-6 py-4">{{ $product->user->name ?? '-' }}</td>
-
-                                        <td class="px-6 py-4 text-right">
-                                            <div class="flex justify-end gap-2">
-
-                                                {{-- View --}}
-                                                <a href="{{ route('product.show', $product->id) }}">
-                                                    View
-                                                </a>
-
-                                                {{-- ✅ COMPONENT EDIT --}}
-                                                @can('update', $product)
-                                                    <x-edit-button :url="route('product.edit', $product->id)" />
-                                                @endcan
-
-                                                {{-- ✅ COMPONENT DELETE --}}
-                                                @can('delete', $product)
-                                                    <x-delete-button :url="route('product.destroy', $product->id)" />
-                                                @endcan
-
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition duration-150">
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400">
+                                            {{ $loop->iteration }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
+                                            {{ $product->name }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400">
+                                            {{-- Memanggil relasi kategori --}}
+                                            {{ $product->kategori->name ?? 'Uncategorized' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->quantity < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                                                {{ $product->quantity }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100 font-mono">
+                                            Rp {{ number_format($product->price, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                                            <div class="flex items-center justify-end gap-3">
+                                                <a href="{{ route('product.edit', $product->id) }}" class="text-amber-600 hover:text-amber-800 transition">Edit</a>
+                                                <form action="{{ route('product.delete', $product->id) }}" method="POST" onsubmit="return confirm('Delete this product?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-800 transition">Delete</button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-6">
+                                        <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                             No products found.
                                         </td>
                                     </tr>
