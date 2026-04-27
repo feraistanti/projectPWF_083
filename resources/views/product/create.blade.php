@@ -19,6 +19,22 @@
                         </div>
                     </div>
 
+                    {{-- Menampilkan Pesan Error Umum --}}
+                    @if ($errors->any())
+                        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">There were errors with your submission</h3>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Form --}}
                     <form action="{{ route('product.store') }}" method="POST" class="space-y-6">
                         @csrf
@@ -78,30 +94,48 @@
 
                         {{-- Category --}}
                         <div>
-                            <label for="kategori_id">
+                            <label for="category_id">
                                 <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Category <span class="text-red-500">*</span>
                                 </span>
                             </label>
 
-                            <select name="kategori_id" id="kategori_id"
+                            {{-- Perhatikan: name="category_id" (huruf kecil) --}}
+                            <select name="category_id" id="category_id"
                                 class="w-full px-4 py-2.5 rounded-lg border text-sm 
-                                {{ $errors->has('kategori_id') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} 
+                                {{ $errors->has('category_id') ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700' }} 
                                 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
 
                                 <option value="">-- Choose Category --</option>
 
-                                @foreach ($kategoris as $k)
-                                    <option value="{{ $k->id }}" {{ old('kategori_id') == $k->id ? 'selected' : '' }}>
+                                {{-- Perhatikan: Menggunakan $categories (huruf kecil sesuai Controller) --}}
+                                @foreach ($categories as $k)
+                                    <option value="{{ $k->id }}" {{ old('category_id') == $k->id ? 'selected' : '' }}>
                                         {{ $k->name }}
                                     </option>
                                 @endforeach
                             </select>
 
-                            @error('kategori_id')
+                            @error('category_id')
                                 <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        {{-- Khusus Admin: Pilih Owner (User) --}}
+                        @if(auth()->user()->role === 'admin')
+                        <div>
+                            <label for="user_id">
+                                <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Product Owner <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                            <select name="user_id" id="user_id" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
+                                @foreach(\App\Models\User::all() as $user)
+                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
 
                         {{-- Actions --}}
                         <div class="flex items-center justify-end gap-3 pt-2">

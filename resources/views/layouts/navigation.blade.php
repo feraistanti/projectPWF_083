@@ -21,6 +21,13 @@
                         {{ __('Product') }}
                     </x-nav-link>
                     @endcan
+
+                    {{-- MENU CATEGORY (DESKTOP) --}}
+                    @can('manage-category')
+                    <x-nav-link :href="route('category.index')" :active="request()->routeIs('category.*')">
+                        {{ __('Category') }}
+                    </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -84,6 +91,13 @@
             @can('export-product')
             <x-responsive-nav-link :href="route('product.index')" :active="request()->routeIs('product.*')">
                 {{ __('Product') }}
+            </x-responsive-nav-link>
+            @endcan
+
+            {{-- MENU CATEGORY (MOBILE) --}}
+            @can('manage-category')
+            <x-responsive-nav-link :href="route('category.index')" :active="request()->routeIs('category.*')">
+                {{ __('Category') }}
             </x-responsive-nav-link>
             @endcan
         </div>

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Product;
-use App\Models\Kategori;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         // 2. Jalankan Factory Product
         Product::factory(10)->create();
 
-        // 3. Jalankan Factory Kategori
-        Kategori::factory(10)->create();
+        // 3. Jalankan Factory Category
+        Category::factory(10)->create();
     }
 }

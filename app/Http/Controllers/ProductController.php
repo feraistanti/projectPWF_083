@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Kategori; // ✅ FIX (bukan Category)
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -17,130 +16,99 @@ class ProductController extends Controller
 
     public function index()
     {
-        // ✅ ambil produk + relasi kategori
-        $products = Product::with(['user', 'kategori'])->paginate(10);
-
-        // ✅ WAJIB (biar ga error $kategoris)
-        $kategoris = Kategori::all();
-
-        return view('product.index', compact('products', 'kategoris'));
+        // Pastikan relasi di model Product bernama 'category'
+        $products = Product::with(['user', 'category'])->latest()->paginate(10);
+        return view('product.index', compact('products'));
     }
 
     public function create()
     {
-        $kategoris = Kategori::all(); // ✅ FIX
-        return view('product.create', compact('kategoris'));
+        $categories = Category::all();
+        $isAdmin = auth()->user()->role === 'admin';
+        return view('product.create', compact('categories', 'isAdmin'));
     }
 
     public function store(Request $request)
     {
         $isAdmin = auth()->user()->role === 'admin';
 
+        $rules = [
+            'name' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:0',
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'required|exists:categories,id',
+        ];
+
         if ($isAdmin) {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'quantity' => 'required|integer',
-                'price' => 'required|numeric',
-                'user_id' => 'required|exists:users,id',
-                'kategori_id' => 'required|exists:kategoris,id', // ✅ FIX
-            ]);
-        } else {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'quantity' => 'required|integer',
-                'price' => 'required|numeric',
-            ]);
-
-            $validated['user_id'] = auth()->id();
-
-            // ✅ kategori default
-            $validated['kategori_id'] = Kategori::firstOrCreate([
-                'name' => 'Uncategorized'
-            ])->id;
+            $rules['user_id'] = 'required|exists:users,id';
         }
+
+        $validated = $request->validate($rules);
+
+        if (!$isAdmin) {
+            $validated['user_id'] = auth()->id();
+        }
+
+        // Mapping category_id ke kategori_id untuk database
+        $validated['kategori_id'] = $validated['category_id'];
+        unset($validated['category_id']);
 
         try {
             Product::create($validated);
-
-            return redirect()
-                ->route('product.index')
-                ->with('success', 'Product created successfully.');
-
-        } catch (QueryException $e) {
-            Log::error('DB Error', ['message' => $e->getMessage()]);
-
-            return back()->withInput()->with('error', 'Database error');
-
-        } catch (\Throwable $e) {
-            Log::error('Error', ['message' => $e->getMessage()]);
-
-            return back()->withInput()->with('error', 'Unexpected error');
+            return redirect()->route('product.index')->with('success', 'Produk berhasil ditambah!');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
-    }
-
-    public function show($id)
-    {
-        $product = Product::with('kategori')->findOrFail($id);
-        return view('product.view', compact('product'));
     }
 
     public function edit(Product $product)
     {
         $this->authorize('update', $product);
 
-        $users = User::orderBy('name')->get();
-        $kategoris = Kategori::all(); // ✅ TAMBAH
-
-        return view('product.edit', compact('product', 'users', 'kategoris'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
-
-        Gate::authorize('update', $product);
-
+        $users = User::all();
+        $categories = Category::all();
         $isAdmin = auth()->user()->role === 'admin';
 
-        if ($isAdmin) {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'quantity' => 'required|integer',
-                'price' => 'required|numeric',
-                'user_id' => 'required|exists:users,id',
-                'kategori_id' => 'required|exists:kategoris,id', // ✅ FIX
-            ]);
-        } else {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'quantity' => 'required|integer',
-                'price' => 'required|numeric',
-            ]);
+        return view('product.edit', compact('product', 'users', 'categories', 'isAdmin'));
+    }
 
-            $validated['user_id'] = $product->user_id;
-            $validated['kategori_id'] = $product->kategori_id;
+    public function update(Request $request, Product $product)
+    {
+        $this->authorize('update', $product);
+        $isAdmin = auth()->user()->role === 'admin';
+
+        $rules = [
+            'name' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:0',
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'required|exists:categories,id',
+        ];
+
+        if ($isAdmin) {
+            $rules['user_id'] = 'required|exists:users,id';
         }
 
-        $product->update($validated);
+        $validated = $request->validate($rules);
 
-        return redirect()->route('product.index')
-            ->with('success', 'Product updated successfully.');
+        // --- PERBAIKAN ERROR SQL ---
+        // Pindahkan nilai dari input 'category_id' ke kolom 'kategori_id'
+        $validated['kategori_id'] = $validated['category_id'];
+        
+        // Hapus 'category_id' agar Laravel tidak mencari kolom tersebut di DB
+        unset($validated['category_id']);
+
+        try {
+            $product->update($validated);
+            return redirect()->route('product.index')->with('success', 'Produk diperbarui!');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal update: ' . $e->getMessage());
+        }
     }
 
-    public function delete($id)
+    public function delete(Product $product)
     {
-        $product = Product::findOrFail($id);
         $this->authorize('delete', $product);
-
         $product->delete();
-
-        return redirect()->route('product.index')
-            ->with('success', 'Product berhasil dihapus');
-    }
-
-    public function export()
-    {
-        $this->authorize('export-product');
-        return response()->json(['message' => 'Export jalan']);
+        return redirect()->route('product.index')->with('success', 'Produk dihapus!');
     }
 }

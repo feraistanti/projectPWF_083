@@ -2,19 +2,21 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Product;
 
-class KategoriFactory extends Factory // <-- Pastikan ini KategoriFactory, bukan CategoryFactory
+class CategoryFactory extends Factory
 {
+    protected $model = Category::class;
+
     public function definition(): array
     {
         return [
+            // Hapus ->unique() di sini
             'name' => $this->faker->randomElement([
                 'Elektronik', 'Fashion', 'Makanan & Minuman', 
                 'Kesehatan', 'Otomotif', 'Perabotan', 'Olahraga'
             ]),
-            'product_id' => Product::all()->random()->id,
         ];
     }
 }

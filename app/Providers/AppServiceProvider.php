@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
-
+use App\Models\User; // Ditambahkan untuk mengenali Model User
+use Illuminate\Support\Facades\Gate; // Ditambahkan untuk menggunakan fitur Gate
+use App\Models\Category;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,16 +16,26 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
-    }
+    }  
 
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
-    {
-        // Aturan: Hanya yang rolenya 'admin' yang bisa export-product
-        Gate::define('export-product', function ($user) {
-            return $user->role === 'admin';
-        });
-    }
+{
+    // Gate untuk menyembunyikan menu Product secara umum
+    Gate::define('manage-product', function (User $user) {
+        return $user->role === 'admin';
+    });
+
+    // Gate khusus untuk fitur Export (Instruksi Kelas B)
+    Gate::define('export-product', function (User $user) {
+        return $user->role === 'admin';
+    });
+
+    // Gate untuk Category – hanya Admin
+    Gate::define('manage-category', function (User $user) {
+        return $user->role === 'admin';
+    });
+}
 }

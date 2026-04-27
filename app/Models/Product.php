@@ -9,23 +9,29 @@ class Product extends Model
 {
     use HasFactory;
 
+    /**
+     * Mass Assignment
+     * Pastikan 'kategori_id' masuk di sini agar bisa disimpan lewat Controller.
+     */
     protected $fillable = [
-        'name',
-        'quantity',
-        'price',
-        'user_id',
-        'kategori_id', // ✅ FIX DI SINI
+        'name', 
+        'quantity', 
+        'price', 
+        'user_id', 
+        'kategori_id'
     ];
 
-    // relasi ke user
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // relasi ke kategori
-    public function kategori()
+    /**
+     * Relasi ke model Category.
+     * Menggunakan 'kategori_id' sesuai dengan nama kolom di tabel products kamu.
+     */
+    public function category()
     {
-        return $this->belongsTo(Kategori::class, 'kategori_id'); // ✅ FIX
+        return $this->belongsTo(Category::class, 'kategori_id');
     }
 }
